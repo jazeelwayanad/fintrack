@@ -1,0 +1,68 @@
+// This is your Prisma schema file
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transactions   Transaction[]
+  categories     Category[]
+  paymentMethods PaymentMethod[]
+}
+
+model Transaction {
+  id              String   @id // client-side UUID (syncId)
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type            String   // "income" | "expense"
+  amount          Float
+  categoryId      String
+  paymentMethodId String
+  date            String   // YYYY-MM-DD
+  description     String?
+  createdAt       DateTime
+  updatedAt       DateTime
+  deletedAt       DateTime?
+
+  @@index([userId])
+  @@index([userId, updatedAt])
+}
+
+model Category {
+  id        String   @id // client-side UUID (syncId)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // "income" | "expense"
+  name      String
+  icon      String   @default("")
+  color     String
+  createdAt DateTime
+  updatedAt DateTime
+  deletedAt DateTime?
+
+  @@index([userId])
+}
+
+model PaymentMethod {
+  id        String   @id // client-side UUID (syncId)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  icon      String   @default("")
+  createdAt DateTime
+  updatedAt DateTime
+  deletedAt DateTime?
+
+  @@index([userId])
+}
